@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 
 import StatCard from "./StatCard";
+import ClassPointsChart from "./ClassPointsChart";
 
 export default function Overview({
   data,
@@ -18,6 +19,7 @@ export default function Overview({
 }) {
   const average = getExamAverage();
 
+  // Monthly point leaders
   const leaders = [...data.students]
     .map((student) => ({
       ...student,
@@ -26,10 +28,12 @@ export default function Overview({
     .sort((a, b) => b.points - a.points)
     .slice(0, 5);
 
+  // Recent activities
   const recentActivities = [...data.activities]
     .sort((a, b) => b.date.localeCompare(a.date))
     .slice(0, 5);
 
+  // Dashboard statistics
   const stats = [
     {
       title: "Total Students",
@@ -53,9 +57,10 @@ export default function Overview({
     },
     {
       title: "Exam Average",
-      value: average === null
-        ? "—"
-        : `${average.toFixed(1)}%`,
+      value:
+        average === null
+          ? "—"
+          : `${average.toFixed(1)}%`,
       description: "Average examination score",
       icon: BookOpen,
     },
@@ -64,6 +69,7 @@ export default function Overview({
   return (
     <div>
 
+      {/* Heading */}
       <div className="mb-7 flex flex-wrap items-center justify-between gap-4">
 
         <div>
@@ -85,6 +91,7 @@ export default function Overview({
 
       </div>
 
+      {/* Statistics */}
       <div className="mb-7 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
 
         {stats.map((stat) => (
@@ -96,8 +103,16 @@ export default function Overview({
 
       </div>
 
+      {/* Class Graph + Recent Activities */}
       <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
 
+        {/* Class-wise Points Graph */}
+        <ClassPointsChart
+          students={data.students}
+          activities={data.activities}
+        />
+
+        {/* Recent Activities */}
         <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
 
           <div className="mb-5 flex items-center justify-between">
@@ -122,7 +137,8 @@ export default function Overview({
 
               {recentActivities.map((activity) => {
                 const student = data.students.find(
-                  (s) => s.id === activity.studentId
+                  (s) =>
+                    String(s.id) === String(activity.studentId)
                 );
 
                 return (
@@ -130,6 +146,7 @@ export default function Overview({
                     key={activity.id}
                     className="flex items-center justify-between gap-3 border-b border-slate-100 pb-3 last:border-0"
                   >
+
                     <div>
                       <p className="text-sm font-semibold text-slate-700">
                         {student?.name || "Unknown student"}
@@ -140,14 +157,17 @@ export default function Overview({
                       </p>
                     </div>
 
-                    <span className={`text-sm font-bold ${
-                      Number(activity.points) >= 0
-                        ? "text-green-600"
-                        : "text-red-600"
-                    }`}>
+                    <span
+                      className={`text-sm font-bold ${
+                        Number(activity.points) >= 0
+                          ? "text-green-600"
+                          : "text-red-600"
+                      }`}
+                    >
                       {Number(activity.points) > 0 ? "+" : ""}
                       {activity.points} pts
                     </span>
+
                   </div>
                 );
               })}
@@ -157,6 +177,7 @@ export default function Overview({
 
         </section>
 
+        {/* Monthly Point Leaders */}
         <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
 
           <h2 className="mb-5 font-bold text-slate-800">
@@ -176,7 +197,10 @@ export default function Overview({
               );
 
               return (
-                <div key={student.id} className="mb-5">
+                <div
+                  key={student.id}
+                  className="mb-5"
+                >
 
                   <div className="mb-2 flex justify-between text-sm">
 
@@ -194,7 +218,12 @@ export default function Overview({
                     <div
                       className="h-full rounded-full bg-blue-600"
                       style={{
-                        width: `${Math.max(0, student.points / maximum * 100)}%`,
+                        width: `${
+                          Math.max(
+                            0,
+                            (student.points / maximum) * 100
+                          )
+                        }%`,
                       }}
                     />
                   </div>
