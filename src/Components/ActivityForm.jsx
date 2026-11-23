@@ -21,6 +21,7 @@ const initialForm = () => ({
   category: "Class participation",
   description: "",
   points: 2,
+  completed: false,
   teacher: "",
   note: "",
 });

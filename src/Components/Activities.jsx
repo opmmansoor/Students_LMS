@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 
 import ActivityForm from "./ActivityForm";
+import ActivityTable from "./ActivityTable";
 
 export default function Activities({
   data,
@@ -93,7 +94,7 @@ export default function Activities({
             setSelectedActivity(null);
             setShowForm(true);
           }}
-          className="flex items-center gap-2 rounded-lg bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white"
+          className="flex items-center gap-2 rounded-lg bg-[#176B55] px-4 py-2.5 text-sm font-semibold text-white"
         >
           <Plus size={17} />
           Add Activity
@@ -117,7 +118,7 @@ export default function Activities({
             Daily Activity Points
           </p>
 
-          <h2 className="mt-2 text-3xl font-bold text-blue-700">
+          <h2 className="mt-2 text-3xl font-bold text-[#176B55]">
             {getPoints("", dateFilter || today)}
           </h2>
         </div>
@@ -127,7 +128,7 @@ export default function Activities({
             Monthly Activity Points
           </p>
 
-          <h2 className="mt-2 text-3xl font-bold text-green-600">
+          <h2 className="mt-2 text-3xl font-bold text-emerald-700">
             {getPoints("", monthFilter || currentMonth)}
           </h2>
         </div>
@@ -169,110 +170,18 @@ export default function Activities({
 
         </div>
 
-        <div className="overflow-x-auto">
-
-          <table className="w-full text-left text-sm">
-
-            <thead className="bg-slate-50 text-xs uppercase text-slate-500">
-              <tr>
-                <th className="p-3">Date</th>
-                <th className="p-3">Student</th>
-                <th className="p-3">Category</th>
-                <th className="p-3">Description</th>
-                <th className="p-3">Points</th>
-                <th className="p-3">Teacher</th>
-                <th className="p-3">Actions</th>
-              </tr>
-            </thead>
-
-            <tbody>
-
-              {filteredActivities.map((activity) => {
-                const student = data.students.find(
-                  (s) => s.id === activity.studentId
-                );
-
-                return (
-                  <tr
-                    key={activity.id}
-                    className="border-b border-slate-100 hover:bg-slate-50"
-                  >
-
-                    <td className="p-3">
-                      {activity.date}
-                    </td>
-
-                    <td className="p-3 font-semibold">
-                      {student?.name || "Unknown"}
-                    </td>
-
-                    <td className="p-3">
-                      {activity.category}
-                    </td>
-
-                    <td className="max-w-48 whitespace-normal p-3">
-                      {activity.description}
-
-                      {activity.note && (
-                        <p className="text-xs text-slate-400">
-                          {activity.note}
-                        </p>
-                      )}
-                    </td>
-
-                    <td className={`p-3 font-bold ${
-                      Number(activity.points) >= 0
-                        ? "text-green-600"
-                        : "text-red-600"
-                    }`}>
-                      {Number(activity.points) > 0 ? "+" : ""}
-                      {activity.points}
-                    </td>
-
-                    <td className="p-3">
-                      {activity.teacher || "—"}
-                    </td>
-
-                    <td className="p-3">
-                      <div className="flex gap-2">
-
-                        <button
-                          onClick={() => editActivity(activity)}
-                          className="rounded-md bg-blue-50 p-2 text-blue-700"
-                        >
-                          <Pencil size={15} />
-                        </button>
-
-                        <button
-                          onClick={() => handleDelete(activity.id)}
-                          className="rounded-md bg-red-50 p-2 text-red-600"
-                        >
-                          <Trash2 size={15} />
-                        </button>
-
-                      </div>
-                    </td>
-
-                  </tr>
-                );
-              })}
-
-              {filteredActivities.length === 0 && (
-                <tr>
-                  <td
-                    colSpan="7"
-                    className="p-8 text-center text-slate-400"
-                  >
-                    No activities found.
-                  </td>
-                </tr>
-              )}
-
-            </tbody>
-
-          </table>
-
-        </div>
+        <ActivityTable
+          activities={filteredActivities}
+          students={data.students}
+          onToggleComplete={(activity) =>
+            actions.updateActivity({
+              ...activity,
+              completed: !activity.completed,
+            })
+          }
+          onEdit={editActivity}
+          onDelete={handleDelete}
+        />
 
       </section>
 

@@ -3,7 +3,7 @@
 body {
   margin: 0;
   font-family: Inter, Arial, sans-serif;
-  background: #f4f6fa;
+  background: #f5f8f6;
 }
 button {
   cursor: pointer;
@@ -36,4 +36,25 @@ textarea {
 .form-input:focus {
   border-color: #2563eb;
   box-shadow: 0 0 0 2px #dbeafe;
+}
+
+/* Official Madrasa LMS theme */
+:root {
+  --madrasa-primary: #176b55;
+  --madrasa-primary-dark: #125642;
+  --madrasa-navy: #173b32;
+  --madrasa-surface: #ffffff;
+  --madrasa-background: #f5f8f6;
+}
+
+::selection {
+  background: #cce9dc;
+  color: #173b32;
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline: 2px solid #176b55;
+  outline-offset: 2px;
 }

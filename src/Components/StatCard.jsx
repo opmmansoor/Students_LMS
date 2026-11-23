@@ -14,13 +14,13 @@ export default function StatCard({
           {title}
         </p>
 
-        <div className="rounded-lg bg-blue-50 p-3 text-blue-600">
+        <div className="rounded-lg bg-emerald-50 p-3 text-[#176B55]">
           <Icon size={20} />
         </div>
 
       </div>
 
-      <h2 className="mt-3 text-3xl font-bold text-[#14213d]">
+      <h2 className="mt-3 text-3xl font-bold text-[#173B32]">
         {value}
       </h2>
 

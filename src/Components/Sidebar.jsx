@@ -18,10 +18,10 @@ const menuItems = [
 
 export default function Sidebar({ page, setPage }) {
   return (
-    <aside className="w-full bg-[#14213d] p-4 text-white md:min-h-screen md:w-64">
+    <aside className="w-full bg-[#173B32] p-4 text-white md:min-h-screen md:w-64">
 
       <div className="mb-7 flex items-center gap-3 px-2">
-        <School size={28} className="text-blue-300" />
+        <School size={28} className="text-emerald-300" />
 
         <div>
           <h2 className="font-bold tracking-wide">
@@ -49,8 +49,8 @@ export default function Sidebar({ page, setPage }) {
               onClick={() => setPage(item.id)}
               className={`flex shrink-0 items-center gap-3 rounded-lg px-4 py-3 text-sm transition ${
                 page === item.id
-                  ? "bg-blue-600 text-white"
-                  : "text-slate-300 hover:bg-slate-700"
+                  ? "bg-[#176B55] text-white"
+                  : "text-slate-300 hover:bg-[#244E43]"
               }`}
             >
               <Icon size={18} />

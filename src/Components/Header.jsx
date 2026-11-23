@@ -20,7 +20,7 @@ export default function Header({ title }) {
           <Bell size={19} />
         </button>
 
-        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-700">
+        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-100 text-xs font-bold text-[#176B55]">
           AD
         </div>
 
