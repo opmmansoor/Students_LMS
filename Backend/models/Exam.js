@@ -11,17 +11,20 @@ const examSchema = new mongoose.Schema(
 
     examName: {
       type: String,
-      required: true
+      required: true,
+      trim: true
     },
 
     subject: {
       type: String,
-      required: true
+      required: true,
+      trim: true
     },
 
     date: {
-      type: String,
-      required: true
+      type: Date,
+      required: true,
+      default: Date.now
     },
 
     marks: {
@@ -36,13 +39,31 @@ const examSchema = new mongoose.Schema(
       min: 1
     }
   },
-  { timestamps: true }
+  {
+    timestamps: true
+  }
 );
 
+// Validate marks
 examSchema.pre("validate", function () {
   if (this.marks > this.total) {
-    this.invalidate("marks", "Marks cannot exceed total marks");
+    this.invalidate(
+      "marks",
+      "Marks cannot exceed total marks"
+    );
   }
+});
+
+// Virtual percentage
+examSchema.virtual("percentage").get(function () {
+  return Number(((this.marks / this.total) * 100).toFixed(2));
+});
+
+// Virtual pass/fail status (40% pass mark)
+examSchema.virtual("status").get(function () {
+  return (this.marks / this.total) * 100 >= 40
+    ? "Pass"
+    : "Fail";
 });
 
 export default mongoose.model("Exam", examSchema);

@@ -18,19 +18,26 @@ const studentSchema = new mongoose.Schema(
 
     class: {
       type: String,
-      required: true
+      required: true,
+      trim: true
     },
 
     admissionNumber: {
       type: String,
       unique: true,
-      sparse: true
+      sparse: true,
+      trim: true
     },
 
     email: {
       type: String,
       lowercase: true,
-      default: ""
+      trim: true,
+      default: "",
+      match: [
+        /^$|^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+        "Please enter a valid email address"
+      ]
     },
 
     isActive: {
@@ -38,9 +45,12 @@ const studentSchema = new mongoose.Schema(
       default: true
     }
   },
-  { timestamps: true }
+  {
+    timestamps: true
+  }
 );
 
+// Virtual field for full name
 studentSchema.virtual("name").get(function () {
   return `${this.firstName} ${this.lastName}`.trim();
 });

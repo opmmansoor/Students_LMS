@@ -17,7 +17,8 @@ const activitySchema = new mongoose.Schema(
 
     description: {
       type: String,
-      default: ""
+      default: "",
+      trim: true
     },
 
     points: {
@@ -27,11 +28,19 @@ const activitySchema = new mongoose.Schema(
     },
 
     date: {
-      type: String,
-      required: true
+      type: Date,
+      required: true,
+      default: Date.now
+    },
+
+    isCompleted: {
+      type: Boolean,
+      default: false
     }
   },
-  { timestamps: true }
+  {
+    timestamps: true
+  }
 );
 
 export default mongoose.model("Activity", activitySchema);

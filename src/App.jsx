@@ -1,6 +1,13 @@
 
 import { useEffect, useState } from "react";
 
+import {
+  getStudents,
+  createStudent,
+  updateStudent,
+  deleteStudent,
+} from "./api/studentApi";
+
 import Sidebar from "./Components/Sidebar";
 import Header from "./Components/Header";
 import Overview from "./Components/Overview";
@@ -28,7 +35,7 @@ function getToday() {
 }
 
 export default function App() {
-  // Main application data
+  // Application data
   const [data, setData] = useState(() => {
     try {
       const savedData = localStorage.getItem(STORAGE_KEY);
@@ -40,6 +47,7 @@ export default function App() {
       return {
         ...initialData,
         ...parsedData,
+        students: [], // Students will come from MongoDB
       };
     } catch (error) {
       console.error("Error loading saved data:", error);
@@ -47,19 +55,64 @@ export default function App() {
     }
   });
 
-  // Current page
   const [page, setPage] = useState("overview");
+
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   const today = getToday();
   const currentMonth = today.slice(0, 7);
 
-  // Save application data automatically
+  // --------------------------------
+  // FETCH STUDENTS FROM MONGODB
+  // --------------------------------
+
+  useEffect(() => {
+    const fetchStudents = async () => {
+      try {
+        setLoading(true);
+        setError("");
+
+        const students = await getStudents();
+
+        const formattedStudents = students.map((student) => ({
+          ...student,
+          id: student._id,
+        }));
+
+        setData((prev) => ({
+          ...prev,
+          students: formattedStudents,
+        }));
+      } catch (error) {
+        setError(
+          error.response?.data?.message ||
+          "Unable to load students"
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStudents();
+  }, []);
+
+  // --------------------------------
+  // SAVE ACTIVITIES AND EXAMS
+  // --------------------------------
+
+  // Students are stored in MongoDB.
+  // Activities and exams are temporarily stored in localStorage.
+
   useEffect(() => {
     localStorage.setItem(
       STORAGE_KEY,
-      JSON.stringify(data)
+      JSON.stringify({
+        activities: data.activities,
+        exams: data.exams,
+      })
     );
-  }, [data]);
+  }, [data.activities, data.exams]);
 
   // --------------------------------
   // ACTIVITY POINT CALCULATION
@@ -115,55 +168,73 @@ export default function App() {
   };
 
   // --------------------------------
-  // STUDENT CRUD
+  // STUDENT CRUD - MONGODB
   // --------------------------------
 
-  const addStudent = (student) => {
+  // Remove frontend-only IDs before sending data to MongoDB
+  const getStudentPayload = (student) => {
+  return {
+    firstName: student.firstName,
+    lastName: student.lastName,
+    class: student.class,
+    admissionNumber: student.admissionNumber,
+    email: student.email,
+    isActive: student.isActive,
+  };
+};
+
+  // CREATE STUDENT
+  const addStudent = async (student) => {
+    const savedStudent = await createStudent(
+      getStudentPayload(student)
+    );
+
     setData((prev) => ({
       ...prev,
       students: [
         ...prev.students,
         {
-          ...student,
-          id: crypto.randomUUID(),
+          ...savedStudent,
+          id: savedStudent._id,
         },
       ],
     }));
   };
 
-  const updateStudent = (updatedStudent) => {
+  // UPDATE STUDENT
+  const updateStudentData = async (student) => {
+    const updatedStudent = await updateStudent(
+      student.id,
+      getStudentPayload(student)
+    );
+
     setData((prev) => ({
       ...prev,
-      students: prev.students.map((student) =>
-        student.id === updatedStudent.id
-          ? updatedStudent
-          : student
+      students: prev.students.map((item) =>
+        item.id === student.id
+          ? {
+              ...updatedStudent,
+              id: updatedStudent._id,
+            }
+          : item
       ),
     }));
   };
 
-  const deleteStudent = (id) => {
+  // DELETE STUDENT
+  const removeStudent = async (id) => {
+    await deleteStudent(id);
+
     setData((prev) => ({
       ...prev,
-
       students: prev.students.filter(
         (student) => student.id !== id
-      ),
-
-      activities: prev.activities.filter(
-        (activity) =>
-          String(activity.studentId) !== String(id)
-      ),
-
-      exams: prev.exams.filter(
-        (exam) =>
-          String(exam.studentId) !== String(id)
       ),
     }));
   };
 
   // --------------------------------
-  // ACTIVITY CRUD
+  // ACTIVITY CRUD - LOCAL STORAGE
   // --------------------------------
 
   const addActivity = (activity) => {
@@ -200,7 +271,7 @@ export default function App() {
   };
 
   // --------------------------------
-  // EXAM CRUD
+  // EXAM CRUD - LOCAL STORAGE
   // --------------------------------
 
   const addExam = (exam) => {
@@ -242,8 +313,8 @@ export default function App() {
 
   const actions = {
     addStudent,
-    updateStudent,
-    deleteStudent,
+    updateStudent: updateStudentData,
+    deleteStudent: removeStudent,
 
     addActivity,
     updateActivity,
@@ -286,21 +357,29 @@ export default function App() {
   return (
     <div className="min-h-screen bg-slate-50 md:flex">
 
-      {/* Sidebar */}
       <Sidebar
         page={page}
         setPage={setPage}
       />
 
-      {/* Main Content */}
       <main className="min-w-0 flex-1">
 
-        {/* Header */}
         <Header title={titles[page]} />
 
         <div className="p-4 md:p-8">
 
-          {/* Overview */}
+          {loading && (
+            <p className="mb-4 text-blue-600">
+              Loading students...
+            </p>
+          )}
+
+          {error && (
+            <p className="mb-4 text-red-600">
+              {error}
+            </p>
+          )}
+
           {page === "overview" && (
             <Overview
               {...sharedProps}
@@ -308,21 +387,14 @@ export default function App() {
             />
           )}
 
-          {/* Students */}
           {page === "students" && (
-            <StudentsList
-              {...sharedProps}
-            />
+            <StudentsList {...sharedProps} />
           )}
 
-          {/* Activities */}
           {page === "activities" && (
-            <Activities
-              {...sharedProps}
-            />
+            <Activities {...sharedProps} />
           )}
 
-          {/* Examination Results */}
           {page === "exams" && (
             <Exams
               {...sharedProps}
@@ -331,14 +403,10 @@ export default function App() {
             />
           )}
 
-          {/* Reports */}
           {page === "reports" && (
-            <Reports
-              {...sharedProps}
-            />
+            <Reports {...sharedProps} />
           )}
 
-          {/* Footer */}
           <footer className="mt-8 text-center text-xs text-slate-400">
             Campus LMS · Student Performance Management
           </footer>
