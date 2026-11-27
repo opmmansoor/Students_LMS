@@ -2,7 +2,34 @@
 import mongoose from "mongoose";
 
 import Student from "../models/Student.js";
+import Activity from "../models/Activity.js";
+import Exam from "../models/Exam.js";
 import asyncHandler from "../middleware/asyncHandler.js";
+
+const allowedFields = [
+  "name",
+  "code",
+  "className",
+  "discipline",
+  "attitude",
+  "status",
+];
+
+// Allow only approved fields
+const pick = (body) =>
+  Object.fromEntries(
+    allowedFields
+      .filter((key) => body[key] !== undefined)
+      .map((key) => [key, body[key]])
+  );
+
+// Validate MongoDB ID
+const validateId = (id, res) => {
+  if (!mongoose.isValidObjectId(id)) {
+    res.status(400);
+    throw new Error("Invalid student ID");
+  }
+};
 
 // GET all students
 export const getStudents = asyncHandler(async (req, res) => {
@@ -11,7 +38,7 @@ export const getStudents = asyncHandler(async (req, res) => {
   res.status(200).json({
     success: true,
     count: students.length,
-    data: students
+    data: students,
   });
 });
 
@@ -19,10 +46,7 @@ export const getStudents = asyncHandler(async (req, res) => {
 export const getStudent = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
-  if (!mongoose.isValidObjectId(id)) {
-    res.status(400);
-    throw new Error("Invalid student ID");
-  }
+  validateId(id, res);
 
   const student = await Student.findById(id);
 
@@ -33,17 +57,17 @@ export const getStudent = asyncHandler(async (req, res) => {
 
   res.status(200).json({
     success: true,
-    data: student
+    data: student,
   });
 });
 
 // CREATE student
 export const createStudent = asyncHandler(async (req, res) => {
-  const student = await Student.create(req.body);
+  const student = await Student.create(pick(req.body));
 
   res.status(201).json({
     success: true,
-    data: student
+    data: student,
   });
 });
 
@@ -51,17 +75,14 @@ export const createStudent = asyncHandler(async (req, res) => {
 export const updateStudent = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
-  if (!mongoose.isValidObjectId(id)) {
-    res.status(400);
-    throw new Error("Invalid student ID");
-  }
+  validateId(id, res);
 
   const student = await Student.findByIdAndUpdate(
     id,
-    req.body,
+    pick(req.body),
     {
       new: true,
-      runValidators: true
+      runValidators: true,
     }
   );
 
@@ -72,7 +93,7 @@ export const updateStudent = asyncHandler(async (req, res) => {
 
   res.status(200).json({
     success: true,
-    data: student
+    data: student,
   });
 });
 
@@ -80,10 +101,7 @@ export const updateStudent = asyncHandler(async (req, res) => {
 export const deleteStudent = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
-  if (!mongoose.isValidObjectId(id)) {
-    res.status(400);
-    throw new Error("Invalid student ID");
-  }
+  validateId(id, res);
 
   const student = await Student.findByIdAndDelete(id);
 
@@ -92,8 +110,14 @@ export const deleteStudent = asyncHandler(async (req, res) => {
     throw new Error("Student not found");
   }
 
+  // Delete related activities and exams
+  await Promise.all([
+    Activity.deleteMany({ studentId: student._id }),
+    Exam.deleteMany({ studentId: student._id }),
+  ]);
+
   res.status(200).json({
     success: true,
-    message: "Student deleted successfully"
+    message: "Student and related records deleted successfully",
   });
 });

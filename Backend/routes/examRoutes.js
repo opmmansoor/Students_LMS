@@ -6,15 +6,19 @@ import {
   getExam,
   createExam,
   updateExam,
-  deleteExam
+  deleteExam,
 } from "../controllers/examController.js";
 
 const router = express.Router();
 
-router.get("/", getExams);
-router.get("/:id", getExam);
-router.post("/", createExam);
-router.put("/:id", updateExam);
-router.delete("/:id", deleteExam);
+// Exam routes
+router.route("/")
+  .get(getExams)
+  .post(createExam);
+
+router.route("/:id")
+  .get(getExam)
+  .put(updateExam)
+  .delete(deleteExam);
 
 export default router;

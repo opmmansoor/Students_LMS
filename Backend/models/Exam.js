@@ -6,51 +6,65 @@ const examSchema = new mongoose.Schema(
     studentId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Student",
-      required: true
+      required: true,
     },
 
+    // Support both examName and exam
     examName: {
       type: String,
-      required: true,
-      trim: true
+      trim: true,
+      default: "",
+    },
+
+    exam: {
+      type: String,
+      trim: true,
+      default: "",
     },
 
     subject: {
       type: String,
       required: true,
-      trim: true
+      trim: true,
     },
 
     date: {
       type: Date,
       required: true,
-      default: Date.now
+      default: Date.now,
     },
 
     marks: {
       type: Number,
       required: true,
-      min: 0
+      min: 0,
     },
 
     total: {
       type: Number,
       required: true,
-      min: 1
-    }
+      min: 1,
+    },
+
+    remark: {
+      type: String,
+      default: "",
+      trim: true,
+    },
   },
   {
-    timestamps: true
+    timestamps: true,
   }
 );
 
-// Validate marks
+// Validate exam name
 examSchema.pre("validate", function () {
+  if (!this.examName && !this.exam) {
+    this.invalidate("examName", "Exam name is required");
+  }
+
   if (this.marks > this.total) {
-    this.invalidate(
-      "marks",
-      "Marks cannot exceed total marks"
-    );
+    this.invalidate("marks", "Marks cannot exceed total marks");
   }
 });
 

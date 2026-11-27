@@ -14,7 +14,7 @@ import examRoutes from "./routes/examRoutes.js";
 
 import {
   notFound,
-  errorHandler
+  errorHandler,
 } from "./middleware/errorMiddleware.js";
 
 // Load environment variables
@@ -26,27 +26,31 @@ const PORT = process.env.PORT || 5000;
 // Security middleware
 app.use(helmet());
 
-app.use(cors({
-  origin: process.env.CLIENT_URL || "http://localhost:5173"
-}));
+app.use(
+  cors({
+    origin: process.env.CLIENT_URL || "http://localhost:5174",
+  })
+);
 
 // Body parser
-app.use(express.json());
+app.use(express.json({ limit: "1mb" }));
 
 // Logger
 app.use(morgan("dev"));
 
 // Rate limiter
-app.use(rateLimit({
-  windowMs: 15 * 60 * 1000,
-  limit: 200
-}));
+app.use(
+  rateLimit({
+    windowMs: 15 * 60 * 1000,
+    limit: 200,
+  })
+);
 
 // Home route
 app.get("/", (req, res) => {
   res.status(200).json({
     success: true,
-    message: "Student LMS API is running"
+    message: "Student LMS API is running",
   });
 });
 
@@ -59,7 +63,7 @@ app.use("/api/exams", examRoutes);
 app.use(notFound);
 app.use(errorHandler);
 
-// Start server
+// Start server after connecting to MongoDB
 const startServer = async () => {
   try {
     await connectDB();

@@ -6,40 +6,63 @@ const activitySchema = new mongoose.Schema(
     studentId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Student",
-      required: true
+      required: true,
     },
 
     title: {
       type: String,
-      required: true,
-      trim: true
+      trim: true,
+      default: "",
+    },
+
+    category: {
+      type: String,
+      trim: true,
+      default: "",
     },
 
     description: {
       type: String,
       default: "",
-      trim: true
+      trim: true,
     },
 
     points: {
       type: Number,
       required: true,
-      min: 0
+      min: 0,
     },
 
     date: {
       type: Date,
       required: true,
-      default: Date.now
+      default: Date.now,
     },
 
     isCompleted: {
       type: Boolean,
-      default: false
-    }
+      default: false,
+    },
+
+    completed: {
+      type: Boolean,
+      default: false,
+    },
+
+    teacher: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    note: {
+      type: String,
+      default: "",
+      trim: true,
+    },
   },
   {
-    timestamps: true
+    timestamps: true,
   }
 );
 

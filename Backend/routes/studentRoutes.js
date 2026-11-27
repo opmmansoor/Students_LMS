@@ -6,15 +6,19 @@ import {
   getStudent,
   createStudent,
   updateStudent,
-  deleteStudent
+  deleteStudent,
 } from "../controllers/studentController.js";
 
 const router = express.Router();
 
-router.get("/", getStudents);
-router.get("/:id", getStudent);
-router.post("/", createStudent);
-router.put("/:id", updateStudent);
-router.delete("/:id", deleteStudent);
+// Student routes
+router.route("/")
+  .get(getStudents)
+  .post(createStudent);
+
+router.route("/:id")
+  .get(getStudent)
+  .put(updateStudent)
+  .delete(deleteStudent);
 
 export default router;

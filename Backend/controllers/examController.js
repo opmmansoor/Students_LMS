@@ -1,9 +1,36 @@
 
 import mongoose from "mongoose";
-
 import Exam from "../models/Exam.js";
 import Student from "../models/Student.js";
 import asyncHandler from "../middleware/asyncHandler.js";
+
+// Allowed fields
+const allowedFields = [
+  "studentId",
+  "examName",
+  "exam",
+  "subject",
+  "date",
+  "marks",
+  "total",
+  "remark",
+];
+
+// Pick allowed fields only
+const pick = (body) =>
+  Object.fromEntries(
+    allowedFields
+      .filter((key) => body[key] !== undefined)
+      .map((key) => [key, body[key]])
+  );
+
+// Validate MongoDB ID
+const validateId = (id, res) => {
+  if (!mongoose.isValidObjectId(id)) {
+    res.status(400);
+    throw new Error("Invalid exam ID");
+  }
+};
 
 // GET all exams
 export const getExams = asyncHandler(async (req, res) => {
@@ -14,20 +41,15 @@ export const getExams = asyncHandler(async (req, res) => {
   res.status(200).json({
     success: true,
     count: exams.length,
-    data: exams
+    data: exams,
   });
 });
 
 // GET single exam
 export const getExam = asyncHandler(async (req, res) => {
-  const { id } = req.params;
+  validateId(req.params.id, res);
 
-  if (!mongoose.isValidObjectId(id)) {
-    res.status(400);
-    throw new Error("Invalid exam ID");
-  }
-
-  const exam = await Exam.findById(id)
+  const exam = await Exam.findById(req.params.id)
     .populate("studentId", "firstName lastName class");
 
   if (!exam) {
@@ -37,73 +59,39 @@ export const getExam = asyncHandler(async (req, res) => {
 
   res.status(200).json({
     success: true,
-    data: exam
+    data: exam,
   });
 });
 
 // CREATE exam
 export const createExam = asyncHandler(async (req, res) => {
-  const {
-    studentId,
-    examName,
-    subject,
-    date,
-    marks,
-    total
-  } = req.body;
+  const data = pick(req.body);
 
-  if (!mongoose.isValidObjectId(studentId)) {
+  if (!mongoose.isValidObjectId(data.studentId)) {
     res.status(400);
     throw new Error("Invalid student ID");
   }
 
-  const student = await Student.findById(studentId);
+  const student = await Student.findById(data.studentId);
 
   if (!student) {
     res.status(404);
     throw new Error("Student not found");
   }
 
-  const exam = await Exam.create({
-    studentId,
-    examName,
-    subject,
-    date,
-    marks,
-    total
-  });
+  const exam = await Exam.create(data);
 
   res.status(201).json({
     success: true,
-    data: exam
+    data: exam,
   });
 });
 
 // UPDATE exam
 export const updateExam = asyncHandler(async (req, res) => {
-  const { id } = req.params;
+  validateId(req.params.id, res);
 
-  if (!mongoose.isValidObjectId(id)) {
-    res.status(400);
-    throw new Error("Invalid exam ID");
-  }
-
-  const allowedFields = [
-    "studentId",
-    "examName",
-    "subject",
-    "date",
-    "marks",
-    "total"
-  ];
-
-  const updates = {};
-
-  allowedFields.forEach((field) => {
-    if (req.body[field] !== undefined) {
-      updates[field] = req.body[field];
-    }
-  });
+  const updates = pick(req.body);
 
   if (updates.studentId !== undefined) {
     if (!mongoose.isValidObjectId(updates.studentId)) {
@@ -120,11 +108,11 @@ export const updateExam = asyncHandler(async (req, res) => {
   }
 
   const exam = await Exam.findByIdAndUpdate(
-    id,
+    req.params.id,
     updates,
     {
       new: true,
-      runValidators: true
+      runValidators: true,
     }
   ).populate("studentId", "firstName lastName class");
 
@@ -135,20 +123,15 @@ export const updateExam = asyncHandler(async (req, res) => {
 
   res.status(200).json({
     success: true,
-    data: exam
+    data: exam,
   });
 });
 
 // DELETE exam
 export const deleteExam = asyncHandler(async (req, res) => {
-  const { id } = req.params;
+  validateId(req.params.id, res);
 
-  if (!mongoose.isValidObjectId(id)) {
-    res.status(400);
-    throw new Error("Invalid exam ID");
-  }
-
-  const exam = await Exam.findByIdAndDelete(id);
+  const exam = await Exam.findByIdAndDelete(req.params.id);
 
   if (!exam) {
     res.status(404);
@@ -157,6 +140,6 @@ export const deleteExam = asyncHandler(async (req, res) => {
 
   res.status(200).json({
     success: true,
-    message: "Exam deleted successfully"
+    message: "Exam deleted successfully",
   });
 });

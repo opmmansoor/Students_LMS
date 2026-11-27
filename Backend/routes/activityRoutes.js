@@ -6,15 +6,19 @@ import {
   getActivity,
   createActivity,
   updateActivity,
-  deleteActivity
+  deleteActivity,
 } from "../controllers/activityController.js";
 
 const router = express.Router();
 
-router.get("/", getActivities);
-router.get("/:id", getActivity);
-router.post("/", createActivity);
-router.put("/:id", updateActivity);
-router.delete("/:id", deleteActivity);
+// Activity routes
+router.route("/")
+  .get(getActivities)
+  .post(createActivity);
+
+router.route("/:id")
+  .get(getActivity)
+  .put(updateActivity)
+  .delete(deleteActivity);
 
 export default router;

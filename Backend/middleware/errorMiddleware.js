@@ -2,6 +2,7 @@
 // Handle routes that do not exist
 export const notFound = (req, res, next) => {
   const error = new Error(`Route not found: ${req.originalUrl}`);
+
   res.status(404);
   next(error);
 };
@@ -20,7 +21,9 @@ export const errorHandler = (err, req, res, next) => {
   // MongoDB duplicate key
   if (err.code === 11000) {
     statusCode = 409;
+
     const field = Object.keys(err.keyValue || {})[0];
+
     message = field
       ? `${field} already exists`
       : "Duplicate value already exists";
@@ -29,6 +32,7 @@ export const errorHandler = (err, req, res, next) => {
   // Mongoose validation error
   if (err.name === "ValidationError") {
     statusCode = 400;
+
     message = Object.values(err.errors)
       .map((error) => error.message)
       .join(", ");
@@ -36,6 +40,6 @@ export const errorHandler = (err, req, res, next) => {
 
   res.status(statusCode).json({
     success: false,
-    message
+    message,
   });
 };
