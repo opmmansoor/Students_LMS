@@ -1,4 +1,3 @@
-
 import express from "express";
 
 import {
@@ -11,7 +10,6 @@ import {
 
 const router = express.Router();
 
-// Exam routes
 router.route("/")
   .get(getExams)
   .post(createExam);
